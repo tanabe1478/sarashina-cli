@@ -44,8 +44,25 @@ public enum CredentialStore {
         #if os(Windows)
         let encrypted = try Data(contentsOf: credentialURL)
         let decrypted = try unprotect(encrypted)
-        guard let key = String(data: decrypted, encoding: .utf8), !key.isEmpty else {
+        guard let storedKey = String(data: decrypted, encoding: .utf8) else {
             throw SarashinaError(code: "credential_store_error", message: "The stored API key is invalid")
+        }
+        let key = storedKey.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !key.isEmpty else {
+            throw SarashinaError(code: "credential_store_error", message: "The stored API key is empty")
+        }
+        if key.lowercased().hasPrefix("bearer ") {
+            throw SarashinaError(
+                code: "invalid_stored_api_key",
+                message: "The stored value includes the `Bearer` prefix. Store only the API key itself."
+            )
+        }
+        if (key.hasPrefix("\"") && key.hasSuffix("\"")) ||
+            (key.hasPrefix("'") && key.hasSuffix("'")) {
+            throw SarashinaError(
+                code: "invalid_stored_api_key",
+                message: "The stored API key is surrounded by quotation marks. Store the key without quotes."
+            )
         }
         return key
         #else
