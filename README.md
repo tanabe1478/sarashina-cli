@@ -11,23 +11,30 @@ Sarashina APIで日本語文章を添削する、Swift製のエージェント�
 
 ```powershell
 swift build -c release
+$bin = swift build -c release --show-bin-path
 ```
 
-実行ファイルは `.build\release\sarashina.exe` に生成されます。
+ビルド後は `swift run` は不要です。生成された実行ファイルを直接起動します。
+
+```powershell
+& "$bin\sarashina.exe" --version
+```
+
+Windows環境によっては `.build\release` のシンボリックリンクが作成されないため、`--show-bin-path` で実際の出力先を取得するのが確実です。
 
 ## APIキーを安全に保存する
 
 Windows DPAPIをSwiftから直接利用し、現在のWindowsユーザーだけが復号できる形で保存します。入力内容は画面に表示されません。
 
 ```powershell
-sarashina auth set
-sarashina auth status
+& "$bin\sarashina.exe" auth set
+& "$bin\sarashina.exe" auth status
 ```
 
 保存したキーを削除する場合:
 
 ```powershell
-sarashina auth delete
+& "$bin\sarashina.exe" auth delete
 ```
 
 `SARASHINA_API_KEY` が設定されている場合は、保存済みキーより環境変数を優先します。APIキーを表示するコマンドはありません。
@@ -35,7 +42,7 @@ sarashina auth delete
 ## 添削
 
 ```powershell
-sarashina proofread "昨日は会議で話しをしました。"
+& "$bin\sarashina.exe" proofread "昨日は会議で話しをしました。"
 ```
 
 標準入力とJSON出力:
